@@ -10,7 +10,12 @@ import os
 # Load trained model
 @st.cache_resource
 def load_model():
-    model_path = os.path.join("models", "lgbm_ranker.pkl")
+    # Path relative to frontend folder
+    model_path = os.path.join("..", "models", "lgbm_ranker.pkl")
+    
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"Model file not found at {model_path}")
+    
     with open(model_path, "rb") as f:
         model = pickle.load(f)
     return model
@@ -47,28 +52,14 @@ def predict(df):
 st.set_page_config(page_title="Nascar Race Predictions", layout="wide")
 st.title(" Nascar Race Predictions")
 
-uploaded_file = st.file_uploader("Upload new race CSV", type="csv")
+# Automatically load CSV from data folder
+csv_path = os.path.join("..", "data", "nascar_driver_statistics.csv")
+new_data = pd.read_csv(csv_path)
 
-if uploaded_file:
-    new_data = pd.read_csv(uploaded_file)
+st.subheader("Preview of dataset:")
+st.dataframe(new_data.head())
 
-    st.subheader("Preview of uploaded data:")
-    st.dataframe(new_data.head())
-
-    if st.button("Predict Rankings"):
-        predictions = predict(new_data)
-        st.subheader("Predicted Rankings:")
-        st.dataframe(predictions.reset_index(drop=True))
-
-#def Main():
- #   st.set_page_config(
-  #      page_title="Nascar Race Predictions",
-   #     layout="wide"
-    #)
-
-    #st.title("Nascar Race Predictions")
-
-
-
-#if __name__ == "__main__":
- #   Main()
+if st.button("Predict Rankings"):
+    predictions = predict(new_data)
+    st.subheader("Predicted Rankings:")
+    st.dataframe(predictions.reset_index(drop=True))
