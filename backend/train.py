@@ -7,6 +7,8 @@ from lightgbm import LGBMRanker
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import ndcg_score, label_ranking_average_precision_score
 import numpy as np
+import pickle
+import os
 
 
 def Main():
@@ -65,6 +67,20 @@ def Main():
     results = test_df.groupby('Year').apply(calculate_metrics, include_groups=False)
     print("\n--- Average Test Results ---")
     print(results.mean())
+
+    models_dir = "../models"
+
+    # Create folder 
+    os.makedirs(models_dir, exist_ok=True)
+
+    # Full path to model file
+    model_path = os.path.join(models_dir, "lgbm_ranker.pkl")
+
+    # Save model
+    with open(model_path, "wb") as f:
+        pickle.dump(model, f)
+
+    print(f"Model saved successfully to {model_path}", flush=True)
 
 
 def calculate_metrics(group):
